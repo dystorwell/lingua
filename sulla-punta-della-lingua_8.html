@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sulla Punta della Lingua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #1A1A18; --ink-muted: #7A7870; --ink-faint: #C8C6BF;
+  --paper: #FAFAF7; --paper-warm: #F3F1EB;
+  --green: #2D6A4F; --green-light: #D8EFE4;
+  --red: #A0292B; --red-light: #F5E0E0;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+/* SETUP */
+.setup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 20px; }
+.setup-card { background: #fff; border-radius: 16px; padding: 32px 28px; max-width: 420px; width: 100%; }
+.setup-logo { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ink); margin-bottom: 6px; }
+.setup-title { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+.setup-desc { font-size: 13px; color: var(--ink-muted); line-height: 1.6; margin-bottom: 20px; }
+.setup-desc a { color: #8B6914; }
+.setup-label { font-size: 12px; font-weight: 500; margin-bottom: 6px; display: block; }
+.setup-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--ink-faint); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--paper); color: var(--ink); margin-bottom: 12px; }
+.setup-input:focus { outline: none; border-color: var(--ink); }
+.setup-btn { width: 100%; padding: 12px; background: var(--ink); color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+.setup-note { font-size: 11px; color: var(--ink-muted); margin-top: 10px; text-align: center; }
+
+/* HEADER */
+.header { width: 100%; padding: 3rem 2rem 2rem; text-align: center; border-bottom: 1px solid var(--ink-faint); max-width: 680px; }
+.site-title { font-family: 'Playfair Display', serif; font-size: clamp(24px, 5vw, 36px); font-weight: 400; color: var(--ink); letter-spacing: -0.5px; margin-bottom: 20px; }
+.site-title em { font-style: italic; }
+.toggle-row { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.lang-toggle { display: inline-flex; background: var(--paper-warm); border: 1px solid var(--ink-faint); border-radius: 40px; padding: 4px; gap: 4px; }
+.lang-btn { display: flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 32px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--ink-muted); font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.lang-btn.active { background: var(--ink); color: #fff; }
+
+/* MAIN */
+.main { width: 100%; max-width: 680px; padding: 4rem 2rem; flex: 1; display: flex; flex-direction: column; align-items: center; }
+.score-bar { display: flex; gap: 24px; margin-bottom: 3rem; font-size: 13px; color: var(--ink-muted); }
+.score-item { display: flex; align-items: center; gap: 6px; }
+.score-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-green { background: var(--green); }
+.dot-red { background: var(--red); }
+.score-num { font-weight: 500; color: var(--ink); font-size: 15px; }
+
+.def-card { width: 100%; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 3.5rem; }
+.def-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 1.5rem; }
+.definition { font-family: 'Playfair Display', serif; font-size: clamp(20px, 4vw, 30px); font-weight: 400; line-height: 1.5; color: var(--ink); max-width: 560px; font-style: italic; }
+.loading-def { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ink-faint); font-style: italic; }
+
+.answer-area { width: 100%; max-width: 420px; }
+.answer-input { width: 100%; background: none; border: none; border-bottom: 2px solid var(--ink); padding: 8px 0; font-family: 'Playfair Display', serif; font-size: clamp(20px, 4vw, 26px); color: var(--ink); text-align: center; outline: none; transition: border-color 0.2s; caret-color: #8B6914; }
+.answer-input::placeholder { color: var(--ink-faint); font-style: italic; }
+.answer-input.correct { border-color: var(--green); color: var(--green); }
+.answer-input.wrong { border-color: var(--red); color: var(--red); }
+.submit-hint { text-align: center; margin-top: 10px; font-size: 12px; color: var(--ink-faint); }
+
+.feedback { margin-top: 2rem; padding: 16px 24px; border-radius: 10px; font-size: 14px; line-height: 1.6; max-width: 420px; width: 100%; text-align: center; display: none; }
+.feedback.correct { background: var(--green-light); color: var(--green); display: block; }
+.feedback.wrong { background: var(--red-light); color: var(--red); display: block; }
+.feedback-word { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; display: block; margin-bottom: 4px; }
+
+.next-btn { margin-top: 2rem; padding: 10px 28px; border: 1.5px solid var(--ink); border-radius: 32px; background: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--ink); display: none; transition: background 0.15s, color 0.15s; }
+.next-btn:hover { background: var(--ink); color: #fff; }
+.next-btn.visible { display: inline-block; }
+.skip-btn { margin-top: 1.5rem; background: none; border: none; font-size: 12px; color: var(--ink-faint); cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline; }
+.skip-btn:hover { color: var(--ink-muted); }
+</style>
+</head>
+<body>
+
+<div class="setup-overlay" id="setupOverlay">
+  <div class="setup-card">
+    <div class="setup-logo">Sulla Punta della Lingua</div>
+    <div class="setup-title">Inserisci la tua API key</div>
+    <div class="setup-desc">
+      Puoi ottenerla su <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>.<br>
+      Viene salvata solo nel tuo browser.
+    </div>
+    <label class="setup-label" for="keyInput">API key</label>
+    <input class="setup-input" id="keyInput" type="password" placeholder="sk-ant-..." autocomplete="off" />
+    <button class="setup-btn" onclick="saveKey()">Inizia →</button>
+    <div class="setup-note">🔒 La chiave non lascia mai il tuo dispositivo.</div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="site-title">Sulla Punta della <em>Lingua</em></div>
+  <div class="toggle-row">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnIta" onclick="setLang('it')"><span>🇮🇹</span> Italiano</button>
+      <button class="lang-btn" id="btnEng" onclick="setLang('en')"><span>🇬🇧</span> English</button>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnEasy" onclick="setDiff('easy')">Easy</button>
+      <button class="lang-btn" id="btnHard" onclick="setDiff('hard')">Hard</button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="score-bar">
+    <div class="score-item"><div class="score-dot dot-green"></div><span class="score-num" id="scoreRight">0</span> corrette</div>
+    <div class="score-item"><div class="score-dot dot-red"></div><span class="score-num" id="scoreWrong">0</span> sbagliate</div>
+  </div>
+  <div class="def-card">
+    <div class="def-label" id="defLabel">Definizione</div>
+    <div class="definition" id="definition"><span class="loading-def">Caricamento...</span></div>
+  </div>
+  <div class="answer-area">
+    <input class="answer-input" id="answerInput" type="text" placeholder="scrivi qui..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') checkAnswer()" />
+    <div class="submit-hint" id="submitHint">premi Invio per confermare</div>
+  </div>
+  <div class="feedback" id="feedback">
+    <span class="feedback-word" id="feedbackWord"></span>
+    <span id="feedbackNote"></span>
+  </div>
+  <button class="next-btn" id="nextBtn" onclick="loadWord()">Prossima parola →</button>
+  <button class="skip-btn" id="skipBtn" onclick="loadWord()">salta</button>
+</main>
+
+<script>
+var API_KEY = localStorage.getItem('lingua_api_key') || '';
+var lang = 'it';
+var diff = 'easy';
+var currentWord = '';
+var currentAnswer = '';
+var scoreRight = 0;
+var scoreWrong = 0;
+var answered = false;
+var usedWords = JSON.parse(localStorage.getItem('lingua_used_words') || '[]');
+
+var catsIT = [
+  "emozioni e stati d'animo", "carattere e personalità", "relazioni umane",
+  "sensazioni fisiche", "concetti filosofici", "tempo e memoria",
+  "natura e paesaggio", "arte e creatività", "comportamento sociale",
+  "morale ed etica", "desiderio e ambizione", "paura e coraggio",
+  "bellezza e estetica", "solitudine e compagnia", "ironia e umorismo"
+];
+var catsEN = [
+  "emotions and feelings", "personality traits", "human relationships",
+  "physical sensations", "philosophical concepts", "time and memory",
+  "nature and landscape", "art and creativity", "social behavior",
+  "morality and ethics", "desire and ambition", "fear and courage",
+  "beauty and aesthetics", "solitude and belonging", "irony and humor"
+];
+
+function init() {
+  if (API_KEY) {
+    document.getElementById('setupOverlay').style.display = 'none';
+    loadWord();
+  }
+}
+
+function saveKey() {
+  var val = document.getElementById('keyInput').value.trim();
+  if (!val.startsWith('sk-ant-')) { alert('Chiave non valida. Deve iniziare con sk-ant-'); return; }
+  API_KEY = val;
+  localStorage.setItem('lingua_api_key', val);
+  document.getElementById('setupOverlay').style.display = 'none';
+  loadWord();
+}
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('btnIta').classList.toggle('active', l === 'it');
+  document.getElementById('btnEng').classList.toggle('active', l === 'en');
+  document.getElementById('defLabel').textContent = l === 'it' ? 'Definizione' : 'Definition';
+  document.getElementById('answerInput').placeholder = l === 'it' ? 'scrivi qui...' : 'type here...';
+  document.getElementById('submitHint').textContent = l === 'it' ? 'premi Invio per confermare' : 'press Enter to confirm';
+  document.getElementById('nextBtn').textContent = l === 'it' ? 'Prossima parola →' : 'Next word →';
+  usedWords = [];
+  localStorage.removeItem('lingua_used_words');
+  loadWord();
+}
+
+function setDiff(d) {
+  diff = d;
+  document.getElementById('btnEasy').classList.toggle('active', d === 'easy');
+  document.getElementById('btnHard').classList.toggle('active', d === 'hard');
+  usedWords = [];
+  localStorage.removeItem('lingua_used_words');
+  loadWord();
+}
+
+async function loadWord() {
+  var input = document.getElementById('answerInput');
+  var defEl = document.getElementById('definition');
+  var feedback = document.getElementById('feedback');
+  var nextBtn = document.getElementById('nextBtn');
+  var skipBtn = document.getElementById('skipBtn');
+
+  answered = false;
+  input.value = '';
+  input.className = 'answer-input';
+  feedback.className = 'feedback';
+  nextBtn.classList.remove('visible');
+  skipBtn.style.display = 'inline';
+  defEl.innerHTML = '<span class="loading-def">' + (lang === 'it' ? 'Un momento...' : 'Loading...') + '</span>';
+  input.disabled = true;
+
+  var avoidList = usedWords.slice(-30).join(', ');
+  var cats = lang === 'it' ? catsIT : catsEN;
+  var cat = cats[Math.floor(Math.random() * cats.length)];
+
+  var prompt;
+  if (lang === 'it' && diff === 'easy') {
+    prompt = 'Categoria: ' + cat + '. Genera UNA definizione semplice e diretta in italiano per una parola italiana comune su questo tema. La definizione deve essere indiretta (non dire mai la parola). Parole già usate da evitare assolutamente: ' + (avoidList || 'nessuna') + '. Rispondi SOLO con JSON valido: {"word":"...","definition":"...","note":"..."}';
+  } else if (lang === 'it' && diff === 'hard') {
+    prompt = 'Categoria: ' + cat + '. Genera UNA definizione poetica e indiretta in italiano per una parola italiana rara o letteraria su questo tema. Non dire mai la parola. Parole già usate da evitare assolutamente: ' + (avoidList || 'nessuna') + '. Rispondi SOLO con JSON valido: {"word":"...","definition":"...","note":"..."}';
+  } else if (lang === 'en' && diff === 'easy') {
+    prompt = 'Category: ' + cat + '. Generate ONE simple indirect definition in English for a common English word on this theme. Do NOT say the word. Words already used to strictly avoid: ' + (avoidList || 'none') + '. Reply ONLY with valid JSON: {"word":"...","definition":"...","note":"..."}';
+  } else {
+    prompt = 'Category: ' + cat + '. Generate ONE poetic indirect definition in English for a rare or literary English word on this theme. Do NOT say the word. Words already used to strictly avoid: ' + (avoidList || 'none') + '. Reply ONLY with valid JSON: {"word":"...","definition":"...","note":"..."}';
+  }
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        temperature: 1,
+        system: 'You are a vocabulary quiz generator. Reply ONLY with valid JSON, no backticks, no extra text.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    var data = await resp.json();
+    var text = data.content.map(function(b) { return b.text || ''; }).join('').replace(/```json|```/g, '').trim();
+    var parsed = JSON.parse(text);
+
+    currentWord = parsed.word.toLowerCase().trim();
+    currentAnswer = parsed.word;
+    usedWords.push(currentWord);
+    if (usedWords.length > 50) usedWords = usedWords.slice(-50);
+    localStorage.setItem('lingua_used_words', JSON.stringify(usedWords));
+
+    defEl.textContent = parsed.definition;
+    document.getElementById('feedbackNote').textContent = parsed.note || '';
+    input.disabled = false;
+    input.focus();
+  } catch(e) {
+    defEl.innerHTML = '<span class="loading-def">Errore — riprova</span>';
+    input.disabled = false;
+    skipBtn.style.display = 'inline';
+  }
+}
+
+async function checkAnswer() {
+  if (answered) return;
+  var input = document.getElementById('answerInput');
+  var userAnswer = input.value.trim().toLowerCase();
+  if (!userAnswer) return;
+
+  answered = true;
+  input.disabled = true;
+  document.getElementById('skipBtn').style.display = 'none';
+
+  var feedback = document.getElementById('feedback');
+  var feedbackWord = document.getElementById('feedbackWord');
+  var nextBtn = document.getElementById('nextBtn');
+  var nextLabel = lang === 'it' ? 'Prossima parola →' : 'Next word →';
+
+  if (userAnswer === currentWord || userAnswer === currentAnswer.toLowerCase()) {
+    markCorrect(input, feedback, feedbackWord, nextBtn, nextLabel);
+    return;
+  }
+
+  var evalPrompt = lang === 'it'
+    ? 'La parola corretta è "' + currentAnswer + '". L\'utente ha risposto "' + userAnswer + '". È corretta o è un sinonimo valido? Rispondi SOLO con JSON: {"correct": true o false, "reason": "breve spiegazione"}'
+    : 'The correct word is "' + currentAnswer + '". The user answered "' + userAnswer + '". Is it correct or a valid synonym? Reply ONLY with JSON: {"correct": true or false, "reason": "brief explanation"}';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 150,
+        system: 'You evaluate vocabulary quiz answers. Reply ONLY with valid JSON.',
+        messages: [{ role: 'user', content: evalPrompt }]
+      })
+    });
+
+    var data = await resp.json();
+    var text = data.content.map(function(b) { return b.text || ''; }).join('').replace(/```json|```/g, '').trim();
+    var result = JSON.parse(text);
+
+    if (result.correct) {
+      markCorrect(input, feedback, feedbackWord, nextBtn, nextLabel);
+      document.getElementById('feedbackNote').textContent = result.reason || '';
+    } else {
+      markWrong(input, feedback, feedbackWord, nextBtn, nextLabel, result.reason);
+    }
+  } catch(e) {
+    markWrong(input, feedback, feedbackWord, nextBtn, nextLabel, '');
+  }
+}
+
+function markCorrect(input, feedback, feedbackWord, nextBtn, nextLabel) {
+  input.classList.add('correct');
+  scoreRight++;
+  document.getElementById('scoreRight').textContent = scoreRight;
+  feedbackWord.textContent = currentAnswer;
+  feedback.className = 'feedback correct';
+  nextBtn.textContent = nextLabel;
+  nextBtn.classList.add('visible');
+}
+
+function markWrong(input, feedback, feedbackWord, nextBtn, nextLabel, reason) {
+  input.classList.add('wrong');
+  scoreWrong++;
+  document.getElementById('scoreWrong').textContent = scoreWrong;
+  feedbackWord.textContent = currentAnswer;
+  document.getElementById('feedbackNote').textContent = reason || (lang === 'it' ? 'Non esatto.' : 'Not quite.');
+  feedback.className = 'feedback wrong';
+  nextBtn.textContent = nextLabel;
+  nextBtn.classList.add('visible');
+}
+
+init();
+</script>
+</body>
+</html>
